@@ -12,7 +12,7 @@ Built over several weeks as a personal tool I actually wanted to use.
 ## Features (planned / in progress)
 
 - [x] Project structure and README
-- [ ] Live TfL line status
+- [x] Live TfL line status (with clean summary + detailed list)
 - [ ] Filter: All lines / Disruptions only
 - [ ] Save personal journeys
 - [ ] "Is my commute affected?" view
