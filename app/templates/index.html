@@ -23,27 +23,43 @@
             box-shadow: 0 2px 8px rgba(0,0,0,0.06);
             margin-bottom: 16px;
         }
+        .summary {
+            font-size: 0.95em;
+            color: #444;
+            margin-bottom: 12px;
+        }
         .line {
             display: flex;
             justify-content: space-between;
-            padding: 10px 0;
+            align-items: flex-start;
+            padding: 12px 0;
             border-bottom: 1px solid #eee;
+            gap: 16px;
         }
         .line:last-child {
             border-bottom: none;
         }
+        .line-name {
+            font-weight: 500;
+            flex-shrink: 0;
+        }
+        .status-block {
+            text-align: right;
+        }
         .status {
             font-weight: 500;
         }
-        .good {
-            color: #0a7f0a;
+        .reason {
+            font-size: 0.85em;
+            color: #555;
+            margin-top: 4px;
+            max-width: 420px;
         }
-        .delayed {
-            color: #c45c00;
-        }
-        .error {
-            color: #b00020;
-        }
+        .good { color: #0a7f0a; }
+        .minor { color: #c45c00; }
+        .severe { color: #b00020; }
+        .closed { color: #6b6b6b; }
+        .error { color: #b00020; }
     </style>
 </head>
 <body>
@@ -58,12 +74,34 @@
     <div class="card">
         <h2>Live Line Statuses</h2>
         {% if lines %}
-            {% for line in lines %}
+            {% set good_count = lines | selectattr('lineStatuses') | selectattr('lineStatuses.0.statusSeverityDescription', 'equalto', 'Good Service') | list | length %}
+            {% set disrupted = lines | length - good_count %}
+            <p class="summary">
+                {{ good_count }} of {{ lines | length }} lines running a good service
+                {% if disrupted > 0 %}
+                    · {{ disrupted }} with issues
+                {% endif %}
+            </p>
+
+            {% for line in lines | sort(attribute='name') %}
+            {% set status = line.lineStatuses[0] if line.lineStatuses else none %}
+            {% set desc = status.statusSeverityDescription if status else 'Unknown' %}
+            {% set reason = status.reason if status and status.reason else '' %}
             <div class="line">
-                <span>{{ line.name }}</span>
-                <span class="status {% if line.lineStatuses and line.lineStatuses[0].statusSeverityDescription == 'Good Service' %}good{% elif line.lineStatuses %}delayed{% endif %}">
-                    {{ line.lineStatuses[0].statusSeverityDescription if line.lineStatuses else 'Unknown' }}
-                </span>
+                <span class="line-name">{{ line.name }}</span>
+                <div class="status-block">
+                    <span class="status
+                        {% if desc == 'Good Service' %}good
+                        {% elif desc in ['Minor Delays', 'Reduced Service', 'Special Service', 'Change of frequency'] %}minor
+                        {% elif desc in ['Severe Delays', 'Part Suspended', 'Suspended', 'Part Closure', 'Part Closed', 'Issues Reported'] %}severe
+                        {% elif desc in ['Closed', 'Planned Closure', 'No Service', 'Not Running'] %}closed
+                        {% else %}minor{% endif %}">
+                        {{ desc }}
+                    </span>
+                    {% if reason %}
+                    <div class="reason">{{ reason | truncate(160) }}</div>
+                    {% endif %}
+                </div>
             </div>
             {% endfor %}
         {% else %}
