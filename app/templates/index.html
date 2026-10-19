@@ -21,14 +21,54 @@
             border-radius: 10px;
             padding: 20px;
             box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+            margin-bottom: 16px;
+        }
+        .line {
+            display: flex;
+            justify-content: space-between;
+            padding: 10px 0;
+            border-bottom: 1px solid #eee;
+        }
+        .line:last-child {
+            border-bottom: none;
+        }
+        .status {
+            font-weight: 500;
+        }
+        .good {
+            color: #0a7f0a;
+        }
+        .delayed {
+            color: #c45c00;
+        }
+        .error {
+            color: #b00020;
         }
     </style>
 </head>
 <body>
     <h1>TfL Smart Commute</h1>
+
+    {% if error %}
+    <div class="card error">
+        <p>Could not load line statuses: {{ error }}</p>
+    </div>
+    {% endif %}
+
     <div class="card">
-        <p>{{ message }}</p>
-        <p>This is the starting point of the project.</p>
+        <h2>Live Line Statuses</h2>
+        {% if lines %}
+            {% for line in lines %}
+            <div class="line">
+                <span>{{ line.name }}</span>
+                <span class="status {% if line.lineStatuses and line.lineStatuses[0].statusSeverityDescription == 'Good Service' %}good{% elif line.lineStatuses %}delayed{% endif %}">
+                    {{ line.lineStatuses[0].statusSeverityDescription if line.lineStatuses else 'Unknown' }}
+                </span>
+            </div>
+            {% endfor %}
+        {% else %}
+            <p>No line status data available.</p>
+        {% endif %}
     </div>
 </body>
 </html>
