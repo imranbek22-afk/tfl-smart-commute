@@ -2,22 +2,38 @@
 TfL API helpers.
 """
 
+from typing import Any
+
 import httpx
 
 BASE_URL = "https://api.tfl.gov.uk"
+DEFAULT_MODES = ["tube", "overground", "dlr", "elizabeth-line"]
+TIMEOUT = 10.0
 
 
-# TODO: expand to elizabeth-line, dlr, overground once tube is solid
-async def get_line_statuses():
-    """Fetch live Tube line statuses (WIP - tube only for now).
+async def get_line_statuses(modes: list[str] | None = None) -> list[dict[str, Any]]:
+    """Fetch live line statuses for the given modes (or default rail modes).
 
-    Returns the raw JSON list from the TfL API.
+    Supports Tube, Overground, DLR and Elizabeth line by default.
+
+    Args:
+        modes: List of TfL mode names (e.g. ["tube", "dlr"]). Defaults to
+            the main rail modes used by the app.
+
+    Returns:
+        List of line objects (each with lineStatuses) from the TfL API.
+
+    Raises:
+        httpx.HTTPStatusError: If the API returns a non-success status.
+        httpx.RequestError: On network, timeout or other request failures.
     """
-    url = f"{BASE_URL}/Line/Mode/tube/Status"
-    # rough for now - no timeout, basic error check
-    async with httpx.AsyncClient() as client:
+    if modes is None:
+        modes = DEFAULT_MODES
+
+    modes_param = ",".join(modes)
+    url = f"{BASE_URL}/Line/Mode/{modes_param}/Status"
+
+    async with httpx.AsyncClient(timeout=TIMEOUT) as client:
         response = await client.get(url)
-        if response.status_code != 200:
-            print(f"TfL request failed: {response.status_code}")
-            return []  # TODO: raise properly later
+        response.raise_for_status()
         return response.json()
