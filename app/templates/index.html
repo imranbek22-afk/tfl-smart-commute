@@ -5,77 +5,199 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>TfL Smart Commute</title>
     <style>
+        :root {
+            --tfl-blue: #0019a8;
+            --tfl-blue-light: #e8eaf6;
+            --bg: #f4f6f9;
+            --card-bg: #ffffff;
+            --text: #1a1a1a;
+            --text-muted: #555;
+            --border: #e5e7eb;
+            --good: #0a7f0a;
+            --good-bg: #e8f5e9;
+            --minor: #c45c00;
+            --minor-bg: #fff3e0;
+            --severe: #b00020;
+            --severe-bg: #ffebee;
+            --closed: #6b6b6b;
+            --closed-bg: #f5f5f5;
+            --radius: 12px;
+            --shadow: 0 1px 3px rgba(0, 0, 0, 0.08), 0 4px 12px rgba(0, 0, 0, 0.04);
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
         body {
-            font-family: system-ui, -apple-system, sans-serif;
-            max-width: 800px;
-            margin: 40px auto;
-            padding: 0 20px;
-            background: #f5f7fa;
-            color: #1a1a1a;
+            font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+            max-width: 720px;
+            margin: 0 auto;
+            padding: 32px 20px 48px;
+            background: var(--bg);
+            color: var(--text);
+            line-height: 1.5;
         }
+
         h1 {
-            color: #0019a8;
+            color: var(--tfl-blue);
+            font-size: 1.75rem;
+            font-weight: 700;
+            margin: 0 0 8px;
+            letter-spacing: -0.02em;
         }
+
+        .subtitle {
+            color: var(--text-muted);
+            font-size: 0.95rem;
+            margin: 0 0 28px;
+        }
+
         .card {
-            background: white;
-            border-radius: 10px;
-            padding: 20px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.06);
-            margin-bottom: 16px;
+            background: var(--card-bg);
+            border-radius: var(--radius);
+            padding: 24px;
+            box-shadow: var(--shadow);
+            margin-bottom: 20px;
         }
+
+        .card h2 {
+            margin: 0 0 16px;
+            font-size: 1.15rem;
+            font-weight: 600;
+            color: var(--text);
+        }
+
         .summary {
-            font-size: 0.95em;
-            color: #444;
-            margin-bottom: 12px;
+            background: var(--tfl-blue-light);
+            border-radius: 8px;
+            padding: 12px 16px;
+            font-size: 0.95rem;
+            color: #1e3a5f;
+            margin-bottom: 20px;
+            font-weight: 500;
         }
-        .line {
+
+        .summary .issues {
+            color: var(--severe);
+        }
+
+        .line-list {
             display: flex;
-            justify-content: space-between;
-            align-items: flex-start;
-            padding: 12px 0;
-            border-bottom: 1px solid #eee;
-            gap: 16px;
+            flex-direction: column;
+            gap: 0;
         }
+
+        .line {
+            display: grid;
+            grid-template-columns: 1fr auto;
+            gap: 16px;
+            align-items: start;
+            padding: 14px 0;
+            border-bottom: 1px solid var(--border);
+        }
+
         .line:last-child {
             border-bottom: none;
+            padding-bottom: 0;
         }
+
+        .line:first-child {
+            padding-top: 0;
+        }
+
         .line-name {
-            font-weight: 500;
-            flex-shrink: 0;
+            font-weight: 600;
+            font-size: 1rem;
+            color: var(--text);
+            padding-top: 2px;
         }
+
         .status-block {
             text-align: right;
+            min-width: 140px;
         }
+
         .status {
-            font-weight: 500;
+            display: inline-block;
+            font-weight: 600;
+            font-size: 0.85rem;
+            padding: 4px 10px;
+            border-radius: 999px;
+            letter-spacing: 0.01em;
         }
+
+        .status.good {
+            color: var(--good);
+            background: var(--good-bg);
+        }
+
+        .status.minor {
+            color: var(--minor);
+            background: var(--minor-bg);
+        }
+
+        .status.severe {
+            color: var(--severe);
+            background: var(--severe-bg);
+        }
+
+        .status.closed {
+            color: var(--closed);
+            background: var(--closed-bg);
+        }
+
         .reason {
-            font-size: 0.85em;
-            color: #555;
-            margin-top: 4px;
-            max-width: 420px;
+            font-size: 0.82rem;
+            color: var(--text-muted);
+            margin-top: 6px;
+            max-width: 360px;
+            line-height: 1.4;
+            text-align: right;
         }
-        .good { color: #0a7f0a; }
-        .minor { color: #c45c00; }
-        .severe { color: #b00020; }
-        .closed { color: #6b6b6b; }
+
         .error {
             background: #fff5f5;
             border: 1px solid #ffcdd2;
-            color: #b00020;
+            color: var(--severe);
         }
+
         .error h2 {
             margin-top: 0;
-            color: #b00020;
-            font-size: 1.1em;
+            color: var(--severe);
+            font-size: 1.1rem;
         }
+
         .error p {
-            margin: 8px 0 0 0;
+            margin: 8px 0 0;
+        }
+
+        .empty {
+            color: var(--text-muted);
+            text-align: center;
+            padding: 24px 0;
+        }
+
+        @media (max-width: 520px) {
+            .line {
+                grid-template-columns: 1fr;
+                gap: 6px;
+            }
+
+            .status-block {
+                text-align: left;
+            }
+
+            .reason {
+                text-align: left;
+                max-width: none;
+            }
         }
     </style>
 </head>
 <body>
     <h1>TfL Smart Commute</h1>
+    <p class="subtitle">Live status for Tube, Overground, Elizabeth line and DLR</p>
 
     {% if error %}
     <div class="card error">
@@ -88,45 +210,52 @@
     <div class="card">
         <h2>Live Line Statuses</h2>
         {% if lines %}
-            {% set good_count = 0 %}
+            {% set ns = namespace(good_count=0) %}
             {% for line in lines %}
-                {% if line.lineStatuses and line.lineStatuses[0].statusSeverityDescription == 'Good Service' %}
-                    {% set good_count = good_count + 1 %}
+                {% set status = line.lineStatuses[0] if line.lineStatuses else none %}
+                {% set desc = status.statusSeverityDescription if status else 'Unknown' %}
+                {% if desc == 'Good Service' %}
+                    {% set ns.good_count = ns.good_count + 1 %}
                 {% endif %}
             {% endfor %}
-            {% set disrupted = lines | length - good_count %}
-            <p class="summary">
-                {{ good_count }} of {{ lines | length }} lines running a good service
+            {% set disrupted = lines | length - ns.good_count %}
+            <div class="summary">
+                {{ ns.good_count }} of {{ lines | length }} lines running a good service
                 {% if disrupted > 0 %}
-                    · {{ disrupted }} with issues
+                    <span class="issues"> · {{ disrupted }} with issues</span>
                 {% endif %}
-            </p>
-
-            {% for line in lines | sort(attribute='name') %}
-            {% set status = line.lineStatuses[0] if line.lineStatuses else none %}
-            {% set desc = status.statusSeverityDescription if status else 'Unknown' %}
-            {% set reason = status.reason if status and status.reason else '' %}
-            <div class="line">
-                <span class="line-name">{{ line.name | default('Unknown line') }}</span>
-                <div class="status-block">
-                    <span class="status
-                        {% if desc == 'Good Service' %}good
-                        {% elif desc in ['Minor Delays', 'Reduced Service', 'Special Service', 'Change of frequency'] %}minor
-                        {% elif desc in ['Severe Delays', 'Part Suspended', 'Suspended', 'Part Closure', 'Part Closed', 'Issues Reported'] %}severe
-                        {% elif desc in ['Closed', 'Planned Closure', 'No Service', 'Not Running'] %}closed
-                        {% else %}minor{% endif %}">
-                        {{ desc }}
-                    </span>
-                    {% if reason %}
-                    <div class="reason">{{ reason | truncate(160) }}</div>
-                    {% endif %}
-                </div>
             </div>
+
+            <div class="line-list">
+            {% for line in lines | sort(attribute='name') %}
+                {% set status = line.lineStatuses[0] if line.lineStatuses else none %}
+                {% set desc = status.statusSeverityDescription if status else 'Unknown' %}
+                {% set reason = status.reason if status and status.reason else '' %}
+                {% set severity = 'minor' %}
+                {% if desc == 'Good Service' %}
+                    {% set severity = 'good' %}
+                {% elif desc in ['Minor Delays', 'Reduced Service', 'Special Service', 'Change of frequency'] %}
+                    {% set severity = 'minor' %}
+                {% elif desc in ['Severe Delays', 'Part Suspended', 'Suspended', 'Part Closure', 'Part Closed', 'Issues Reported'] %}
+                    {% set severity = 'severe' %}
+                {% elif desc in ['Closed', 'Planned Closure', 'No Service', 'Not Running'] %}
+                    {% set severity = 'closed' %}
+                {% endif %}
+                <div class="line">
+                    <span class="line-name">{{ line.name | default('Unknown line') }}</span>
+                    <div class="status-block">
+                        <span class="status {{ severity }}">{{ desc }}</span>
+                        {% if reason %}
+                        <div class="reason">{{ reason | truncate(180) }}</div>
+                        {% endif %}
+                    </div>
+                </div>
             {% endfor %}
+            </div>
         {% elif not error %}
-            <p>No line status data available.</p>
+            <p class="empty">No line status data available.</p>
         {% else %}
-            <p>Line statuses will appear here once we can reach TfL.</p>
+            <p class="empty">Line statuses will appear here once we can reach TfL.</p>
         {% endif %}
     </div>
 </body>
