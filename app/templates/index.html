@@ -59,7 +59,19 @@
         .minor { color: #c45c00; }
         .severe { color: #b00020; }
         .closed { color: #6b6b6b; }
-        .error { color: #b00020; }
+        .error {
+            background: #fff5f5;
+            border: 1px solid #ffcdd2;
+            color: #b00020;
+        }
+        .error h2 {
+            margin-top: 0;
+            color: #b00020;
+            font-size: 1.1em;
+        }
+        .error p {
+            margin: 8px 0 0 0;
+        }
     </style>
 </head>
 <body>
@@ -67,14 +79,21 @@
 
     {% if error %}
     <div class="card error">
-        <p>Could not load line statuses: {{ error }}</p>
+        <h2>Unable to load line statuses</h2>
+        <p>{{ error }}</p>
+        <p>Refresh the page in a minute to try again.</p>
     </div>
     {% endif %}
 
     <div class="card">
         <h2>Live Line Statuses</h2>
         {% if lines %}
-            {% set good_count = lines | selectattr('lineStatuses') | selectattr('lineStatuses.0.statusSeverityDescription', 'equalto', 'Good Service') | list | length %}
+            {% set good_count = 0 %}
+            {% for line in lines %}
+                {% if line.lineStatuses and line.lineStatuses[0].statusSeverityDescription == 'Good Service' %}
+                    {% set good_count = good_count + 1 %}
+                {% endif %}
+            {% endfor %}
             {% set disrupted = lines | length - good_count %}
             <p class="summary">
                 {{ good_count }} of {{ lines | length }} lines running a good service
@@ -88,7 +107,7 @@
             {% set desc = status.statusSeverityDescription if status else 'Unknown' %}
             {% set reason = status.reason if status and status.reason else '' %}
             <div class="line">
-                <span class="line-name">{{ line.name }}</span>
+                <span class="line-name">{{ line.name | default('Unknown line') }}</span>
                 <div class="status-block">
                     <span class="status
                         {% if desc == 'Good Service' %}good
@@ -104,8 +123,10 @@
                 </div>
             </div>
             {% endfor %}
-        {% else %}
+        {% elif not error %}
             <p>No line status data available.</p>
+        {% else %}
+            <p>Line statuses will appear here once we can reach TfL.</p>
         {% endif %}
     </div>
 </body>
