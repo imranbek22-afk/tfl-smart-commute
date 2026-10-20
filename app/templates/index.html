@@ -111,6 +111,7 @@
 
         .summary .issues {
             color: var(--severe);
+            font-weight: 600;
         }
 
         .line-list {
@@ -272,7 +273,9 @@
             <div class="summary">
                 {{ ns.good_count }} of {{ lines | length }} lines running a good service
                 {% if disrupted > 0 %}
-                    <span class="issues"> · {{ disrupted }} with issues</span>
+                    <span class="issues"> · {{ disrupted }} line{{ 's' if disrupted != 1 else '' }} with disruptions</span>
+                {% else %}
+                    · all lines running smoothly
                 {% endif %}
             </div>
 
