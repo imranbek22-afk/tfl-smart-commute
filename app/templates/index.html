@@ -117,7 +117,7 @@
         .line-list {
             display: flex;
             flex-direction: column;
-            gap: 0;
+            gap: 4px;
         }
 
         .line {
@@ -125,21 +125,34 @@
             grid-template-columns: 1fr auto;
             gap: 16px;
             align-items: start;
-            padding: 14px 0;
-            border-bottom: 1px solid var(--border);
-        }
-
-        .line:last-child {
-            border-bottom: none;
-            padding-bottom: 0;
-        }
-
-        .line:first-child {
-            padding-top: 0;
+            padding: 12px 14px;
+            border-radius: 8px;
+            border: 1px solid transparent;
+            transition: background-color 0.15s ease, border-color 0.15s ease;
         }
 
         .line.hidden {
             display: none;
+        }
+
+        /* Clear visual emphasis for disrupted lines */
+        .line[data-severity="minor"] {
+            background: var(--minor-bg);
+            border-left: 4px solid var(--minor);
+        }
+
+        .line[data-severity="severe"] {
+            background: var(--severe-bg);
+            border-left: 4px solid var(--severe);
+        }
+
+        .line[data-severity="closed"] {
+            background: var(--closed-bg);
+            border-left: 4px solid var(--closed);
+        }
+
+        .line[data-severity="good"] {
+            background: transparent;
         }
 
         .line-name {
@@ -147,6 +160,19 @@
             font-size: 1rem;
             color: var(--text);
             padding-top: 2px;
+        }
+
+        .line[data-severity="minor"] .line-name {
+            color: var(--minor);
+        }
+
+        .line[data-severity="severe"] .line-name {
+            color: var(--severe);
+            font-weight: 700;
+        }
+
+        .line[data-severity="closed"] .line-name {
+            color: var(--closed);
         }
 
         .status-block {
@@ -170,17 +196,20 @@
 
         .status.minor {
             color: var(--minor);
-            background: var(--minor-bg);
+            background: #fff;
+            border: 1px solid var(--minor);
         }
 
         .status.severe {
             color: var(--severe);
-            background: var(--severe-bg);
+            background: #fff;
+            border: 1px solid var(--severe);
         }
 
         .status.closed {
             color: var(--closed);
-            background: var(--closed-bg);
+            background: #fff;
+            border: 1px solid var(--closed);
         }
 
         .reason {
@@ -190,6 +219,13 @@
             max-width: 360px;
             line-height: 1.4;
             text-align: right;
+        }
+
+        .line[data-severity="minor"] .reason,
+        .line[data-severity="severe"] .reason,
+        .line[data-severity="closed"] .reason {
+            color: var(--text);
+            font-weight: 500;
         }
 
         .error {
