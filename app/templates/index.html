@@ -68,6 +68,37 @@
             color: var(--text);
         }
 
+        .filters {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 20px;
+        }
+
+        .filter-btn {
+            background: transparent;
+            border: 1px solid var(--border);
+            border-radius: 999px;
+            padding: 6px 16px;
+            font-size: 0.9rem;
+            font-weight: 500;
+            color: var(--text-muted);
+            cursor: pointer;
+            transition: all 0.15s ease;
+            font-family: inherit;
+        }
+
+        .filter-btn:hover {
+            background: var(--tfl-blue-light);
+            color: var(--tfl-blue);
+            border-color: var(--tfl-blue);
+        }
+
+        .filter-btn.active {
+            background: var(--tfl-blue);
+            color: white;
+            border-color: var(--tfl-blue);
+        }
+
         .summary {
             background: var(--tfl-blue-light);
             border-radius: 8px;
@@ -209,6 +240,10 @@
 
     <div class="card">
         <h2>Live Line Statuses</h2>
+        <div class="filters">
+            <button class="filter-btn active" type="button">All lines</button>
+            <button class="filter-btn" type="button">Disruptions only</button>
+        </div>
         {% if lines %}
             {% set ns = namespace(good_count=0) %}
             {% for line in lines %}
