@@ -13,7 +13,7 @@ Built over several weeks as a personal tool I actually wanted to use.
 
 - [x] Project structure and README
 - [x] Live TfL line status (with clean summary + detailed list)
-- [ ] Filter: All lines / Disruptions only
+- [x] Filter: All lines / Disruptions only
 - [ ] Save personal journeys
 - [ ] "Is my commute affected?" view
 - [ ] Persistent storage with SQLite

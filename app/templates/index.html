@@ -72,6 +72,7 @@
             display: flex;
             gap: 8px;
             margin-bottom: 20px;
+            flex-wrap: wrap;
         }
 
         .filter-btn {
@@ -91,6 +92,11 @@
             background: var(--tfl-blue-light);
             color: var(--tfl-blue);
             border-color: var(--tfl-blue);
+        }
+
+        .filter-btn:focus-visible {
+            outline: 2px solid var(--tfl-blue);
+            outline-offset: 2px;
         }
 
         .filter-btn.active {
@@ -292,11 +298,12 @@
 
     <div class="card">
         <h2>Live Line Statuses</h2>
-        <div class="filters">
-            <button class="filter-btn active" type="button" data-filter="all">All lines</button>
-            <button class="filter-btn" type="button" data-filter="disruptions">Disruptions only</button>
-        </div>
         {% if lines %}
+            <div class="filters">
+                <button class="filter-btn active" type="button" data-filter="all">All lines</button>
+                <button class="filter-btn" type="button" data-filter="disruptions">Disruptions only</button>
+            </div>
+
             {% set ns = namespace(good_count=0) %}
             {% for line in lines %}
                 {% set status = line.lineStatuses[0] if line.lineStatuses else none %}
