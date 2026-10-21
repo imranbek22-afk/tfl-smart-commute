@@ -14,7 +14,7 @@ Built over several weeks as a personal tool I actually wanted to use.
 - [x] Project structure and README
 - [x] Live TfL line status (with clean summary + detailed list)
 - [x] Filter: All lines / Disruptions only
-- [ ] Save personal journeys
+- [x] Save personal journeys (in-memory, displayed on the page)
 - [ ] "Is my commute affected?" view
 - [ ] Persistent storage with SQLite
 
