@@ -250,6 +250,36 @@
             margin: 8px 0 0;
         }
 
+        .form-errors {
+            background: #fff5f5;
+            border: 1px solid #ffcdd2;
+            border-radius: 8px;
+            padding: 12px 16px;
+            margin-bottom: 16px;
+            color: var(--severe);
+            font-size: 0.9rem;
+        }
+
+        .form-errors ul {
+            margin: 0;
+            padding-left: 18px;
+        }
+
+        .form-errors li {
+            margin: 4px 0;
+        }
+
+        .field-error {
+            color: var(--severe);
+            font-size: 0.8rem;
+            margin-top: 4px;
+            display: none;
+        }
+
+        .field-error.visible {
+            display: block;
+        }
+
         .empty {
             color: var(--text-muted);
             text-align: center;
@@ -280,17 +310,33 @@
 
         input[type="text"] {
             width: 100%;
-            padding: 8px 12px;
+            padding: 10px 12px;
             border: 1px solid var(--border);
             border-radius: 8px;
             font-family: inherit;
             font-size: 1rem;
+            transition: border-color 0.15s ease, box-shadow 0.15s ease;
         }
 
         input[type="text"]:focus {
-            outline: 2px solid var(--tfl-blue);
-            outline-offset: 1px;
+            outline: none;
             border-color: var(--tfl-blue);
+            box-shadow: 0 0 0 3px rgba(0, 25, 168, 0.15);
+        }
+
+        input[type="text"].invalid {
+            border-color: var(--severe);
+        }
+
+        input[type="text"].invalid:focus {
+            box-shadow: 0 0 0 3px rgba(176, 0, 32, 0.15);
+        }
+
+        .hint {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            margin-top: -8px;
+            margin-bottom: 4px;
         }
 
         button[type="submit"] {
@@ -304,10 +350,16 @@
             cursor: pointer;
             font-family: inherit;
             align-self: flex-start;
+            margin-top: 4px;
         }
 
         button[type="submit"]:hover {
             background: #001580;
+        }
+
+        button[type="submit"]:disabled {
+            background: #9ca3af;
+            cursor: not-allowed;
         }
 
         .delete-btn {
@@ -396,20 +448,47 @@
 
     <div class="card">
         <h2>Add a journey</h2>
-        <form method="post" action="/add-journey">
+
+        {% if form_errors %}
+        <div class="form-errors" role="alert">
+            <strong>Please fix the following:</strong>
+            <ul>
+                {% for err in form_errors %}
+                <li>{{ err }}</li>
+                {% endfor %}
+            </ul>
+        </div>
+        {% endif %}
+
+        <form method="post" action="/add-journey" id="journey-form" novalidate>
             <label for="name">Journey name</label>
-            <input type="text" id="name" name="name" placeholder="e.g. Morning commute" required>
+            <input type="text" id="name" name="name" placeholder="e.g. Morning commute"
+                   value="{{ form_data.name if form_data else '' }}"
+                   required minlength="2" maxlength="60" autocomplete="off"
+                   aria-describedby="name-error">
+            <div class="field-error" id="name-error"></div>
 
             <label for="origin">From</label>
-            <input type="text" id="origin" name="origin" placeholder="e.g. Finchley Central" required>
+            <input type="text" id="origin" name="origin" placeholder="e.g. Finchley Central"
+                   value="{{ form_data.origin if form_data else '' }}"
+                   required minlength="2" maxlength="80" autocomplete="off"
+                   aria-describedby="origin-error">
+            <div class="field-error" id="origin-error"></div>
 
             <label for="destination">To</label>
-            <input type="text" id="destination" name="destination" placeholder="e.g. Bank" required>
+            <input type="text" id="destination" name="destination" placeholder="e.g. Bank"
+                   value="{{ form_data.destination if form_data else '' }}"
+                   required minlength="2" maxlength="80" autocomplete="off"
+                   aria-describedby="destination-error">
+            <div class="field-error" id="destination-error"></div>
 
-            <label for="lines">Lines (comma-separated)</label>
-            <input type="text" id="lines" name="lines" placeholder="e.g. Northern, Bank">
+            <label for="lines">Lines (comma-separated, optional)</label>
+            <p class="hint">e.g. Northern, Bank — helps highlight affected journeys later</p>
+            <input type="text" id="lines" name="lines" placeholder="e.g. Northern, Bank"
+                   value="{{ form_data.lines if form_data else '' }}"
+                   maxlength="120" autocomplete="off">
 
-            <button type="submit">Save journey</button>
+            <button type="submit" id="submit-btn">Save journey</button>
         </form>
     </div>
 
@@ -498,14 +577,15 @@
 
     <script>
         document.addEventListener('DOMContentLoaded', function () {
+            // Filter buttons
             const filterBtns = document.querySelectorAll('.filter-btn');
-            const lines = document.querySelectorAll('.line');
+            const lineEls = document.querySelectorAll('.line');
             const noResults = document.getElementById('no-disruptions');
 
             function applyFilter(mode) {
                 let visibleCount = 0;
 
-                lines.forEach(function (line) {
+                lineEls.forEach(function (line) {
                     const severity = line.dataset.severity;
                     const isDisrupted = severity !== 'good';
 
@@ -538,6 +618,99 @@
                     applyFilter(btn.dataset.filter);
                 });
             });
+
+            // Form validation
+            const form = document.getElementById('journey-form');
+            const nameInput = document.getElementById('name');
+            const originInput = document.getElementById('origin');
+            const destInput = document.getElementById('destination');
+            const submitBtn = document.getElementById('submit-btn');
+
+            function showFieldError(input, errorEl, message) {
+                if (message) {
+                    input.classList.add('invalid');
+                    errorEl.textContent = message;
+                    errorEl.classList.add('visible');
+                } else {
+                    input.classList.remove('invalid');
+                    errorEl.textContent = '';
+                    errorEl.classList.remove('visible');
+                }
+            }
+
+            function validateField(input, errorId, minLen) {
+                const errorEl = document.getElementById(errorId);
+                const value = input.value.trim();
+
+                if (!value) {
+                    showFieldError(input, errorEl, 'This field is required.');
+                    return false;
+                }
+                if (value.length < minLen) {
+                    showFieldError(input, errorEl, 'Must be at least ' + minLen + ' characters.');
+                    return false;
+                }
+                showFieldError(input, errorEl, '');
+                return true;
+            }
+
+            function validateOriginDest() {
+                const origin = originInput.value.trim().toLowerCase();
+                const dest = destInput.value.trim().toLowerCase();
+                const originErr = document.getElementById('origin-error');
+                const destErr = document.getElementById('destination-error');
+
+                if (origin && dest && origin === dest) {
+                    showFieldError(originInput, originErr, 'Origin and destination cannot be the same.');
+                    showFieldError(destInput, destErr, 'Origin and destination cannot be the same.');
+                    return false;
+                }
+                // Clear same-station error if it was the only issue
+                if (originErr.textContent.includes('same')) {
+                    showFieldError(originInput, originErr, '');
+                }
+                if (destErr.textContent.includes('same')) {
+                    showFieldError(destInput, destErr, '');
+                }
+                return true;
+            }
+
+            function validateForm() {
+                const nameOk = validateField(nameInput, 'name-error', 2);
+                const originOk = validateField(originInput, 'origin-error', 2);
+                const destOk = validateField(destInput, 'destination-error', 2);
+                const differentOk = validateOriginDest();
+
+                const valid = nameOk && originOk && destOk && differentOk;
+                submitBtn.disabled = !valid;
+                return valid;
+            }
+
+            // Live validation on input
+            [nameInput, originInput, destInput].forEach(function (input) {
+                input.addEventListener('input', function () {
+                    if (input === nameInput) validateField(input, 'name-error', 2);
+                    if (input === originInput) validateField(input, 'origin-error', 2);
+                    if (input === destInput) validateField(input, 'destination-error', 2);
+                    validateOriginDest();
+                    validateForm();
+                });
+                input.addEventListener('blur', function () {
+                    validateForm();
+                });
+            });
+
+            form.addEventListener('submit', function (e) {
+                if (!validateForm()) {
+                    e.preventDefault();
+                    // Focus first invalid field
+                    const firstInvalid = form.querySelector('.invalid');
+                    if (firstInvalid) firstInvalid.focus();
+                }
+            });
+
+            // Initial check if form was re-rendered with errors
+            validateForm();
         });
     </script>
 </body>
