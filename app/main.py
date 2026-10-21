@@ -1,11 +1,14 @@
-from fastapi import FastAPI, Request
+from fastapi import FastAPI, Request, Form
 from fastapi.templating import Jinja2Templates
-from fastapi.responses import HTMLResponse
+from fastapi.responses import HTMLResponse, RedirectResponse
 
 from app.tfl import get_line_statuses, TfLError, TfLTimeoutError, TfLUnavailableError
 
 app = FastAPI(title="TfL Smart Commute")
 templates = Jinja2Templates(directory="app/templates")
+
+# Simple in-memory store for journeys (resets on restart)
+journeys: list[dict] = []
 
 
 @app.get("/", response_class=HTMLResponse)
@@ -31,5 +34,24 @@ async def home(request: Request):
             "request": request,
             "lines": lines,
             "error": error,
+            "journeys": journeys,
         },
     )
+
+
+@app.post("/add-journey")
+async def add_journey(
+    name: str = Form(...),
+    origin: str = Form(...),
+    destination: str = Form(...),
+    lines: str = Form(""),
+):
+    """Store a new journey in memory."""
+    journey = {
+        "name": name.strip(),
+        "origin": origin.strip(),
+        "destination": destination.strip(),
+        "lines": [line.strip() for line in lines.split(",") if line.strip()],
+    }
+    journeys.append(journey)
+    return RedirectResponse(url="/", status_code=303)
