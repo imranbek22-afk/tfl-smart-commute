@@ -28,6 +28,16 @@ async def home(request: Request):
         # Catch-all so the page never crashes
         error = "Something went wrong while fetching line statuses. Please try again later."
 
+    # Simple success messages from redirects
+    message = None
+    msg_type = None
+    if request.query_params.get("saved"):
+        message = "Journey saved."
+        msg_type = "success"
+    elif request.query_params.get("deleted"):
+        message = "Journey deleted."
+        msg_type = "success"
+
     return templates.TemplateResponse(
         "index.html",
         {
@@ -35,6 +45,8 @@ async def home(request: Request):
             "lines": lines,
             "error": error,
             "journeys": journeys,
+            "message": message,
+            "msg_type": msg_type,
         },
     )
 
@@ -100,7 +112,7 @@ async def add_journey(
         "lines": lines_list,
     }
     journeys.append(journey)
-    return RedirectResponse(url="/", status_code=303)
+    return RedirectResponse(url="/?saved=1", status_code=303)
 
 
 @app.post("/delete-journey")
@@ -111,4 +123,4 @@ async def delete_journey(index: int = Form(...)):
             journeys.pop(index)
     except (ValueError, IndexError):
         pass  # Ignore invalid indices
-    return RedirectResponse(url="/", status_code=303)
+    return RedirectResponse(url="/?deleted=1", status_code=303)
