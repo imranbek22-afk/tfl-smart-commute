@@ -372,8 +372,7 @@
             font-weight: 500;
             cursor: pointer;
             font-family: inherit;
-            margin-top: 8px;
-            align-self: flex-start;
+            white-space: nowrap;
         }
 
         .delete-btn:hover {
@@ -383,19 +382,29 @@
         .journey-list {
             display: flex;
             flex-direction: column;
-            gap: 8px;
+            gap: 10px;
         }
 
         .journey {
-            padding: 12px 14px;
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            gap: 16px;
+            padding: 14px 16px;
             background: var(--tfl-blue-light);
             border-radius: 8px;
             border-left: 4px solid var(--tfl-blue);
         }
 
+        .journey-main {
+            flex: 1;
+            min-width: 0;
+        }
+
         .journey-name {
             font-weight: 600;
             font-size: 1rem;
+            line-height: 1.3;
         }
 
         .journey-route {
@@ -408,6 +417,10 @@
             font-size: 0.85rem;
             margin-top: 6px;
             color: var(--text);
+        }
+
+        .journey-actions {
+            flex-shrink: 0;
         }
 
         .journey-empty {
@@ -498,15 +511,19 @@
         <div class="journey-list">
             {% for journey in journeys %}
             <div class="journey">
-                <div class="journey-name">{{ journey.name }}</div>
-                <div class="journey-route">{{ journey.origin }} → {{ journey.destination }}</div>
-                {% if journey.lines %}
-                <div class="journey-lines">Lines: {{ journey.lines | join(', ') }}</div>
-                {% endif %}
-                <form method="post" action="/delete-journey" style="display: inline;">
-                    <input type="hidden" name="index" value="{{ loop.index0 }}">
-                    <button type="submit" class="delete-btn">Delete</button>
-                </form>
+                <div class="journey-main">
+                    <div class="journey-name">{{ journey.name }}</div>
+                    <div class="journey-route">{{ journey.origin }} → {{ journey.destination }}</div>
+                    {% if journey.lines %}
+                    <div class="journey-lines">Lines: {{ journey.lines | join(', ') }}</div>
+                    {% endif %}
+                </div>
+                <div class="journey-actions">
+                    <form method="post" action="/delete-journey">
+                        <input type="hidden" name="index" value="{{ loop.index0 }}">
+                        <button type="submit" class="delete-btn">Delete</button>
+                    </form>
+                </div>
             </div>
             {% endfor %}
         </div>
@@ -628,26 +645,27 @@
 
             function showFieldError(input, errorEl, message) {
                 if (message) {
-                    input.classList.add('invalid');
                     errorEl.textContent = message;
                     errorEl.classList.add('visible');
+                    input.classList.add('invalid');
+                    input.setAttribute('aria-invalid', 'true');
                 } else {
-                    input.classList.remove('invalid');
                     errorEl.textContent = '';
                     errorEl.classList.remove('visible');
+                    input.classList.remove('invalid');
+                    input.removeAttribute('aria-invalid');
                 }
             }
 
             function validateField(input, errorId, minLen) {
-                const errorEl = document.getElementById(errorId);
                 const value = input.value.trim();
-
+                const errorEl = document.getElementById(errorId);
                 if (!value) {
                     showFieldError(input, errorEl, 'This field is required.');
                     return false;
                 }
                 if (value.length < minLen) {
-                    showFieldError(input, errorEl, 'Must be at least ' + minLen + ' characters.');
+                    showFieldError(input, errorEl, `Please enter at least ${minLen} characters.`);
                     return false;
                 }
                 showFieldError(input, errorEl, '');
@@ -655,8 +673,8 @@
             }
 
             function validateOriginDest() {
-                const origin = originInput.value.trim().toLowerCase();
-                const dest = destInput.value.trim().toLowerCase();
+                const origin = originInput.value.trim();
+                const dest = destInput.value.trim();
                 const originErr = document.getElementById('origin-error');
                 const destErr = document.getElementById('destination-error');
 
