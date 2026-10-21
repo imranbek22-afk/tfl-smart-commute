@@ -325,16 +325,26 @@
 
         .journey-name {
             font-weight: 600;
+            font-size: 1rem;
         }
 
         .journey-route {
             font-size: 0.9rem;
             color: var(--text-muted);
+            margin-top: 2px;
         }
 
         .journey-lines {
             font-size: 0.85rem;
-            margin-top: 4px;
+            margin-top: 6px;
+            color: var(--text);
+        }
+
+        .journey-empty {
+            color: var(--text-muted);
+            text-align: center;
+            padding: 16px 0 8px;
+            font-size: 0.95rem;
         }
 
         @media (max-width: 520px) {
@@ -385,9 +395,9 @@
         </form>
     </div>
 
-    {% if journeys %}
     <div class="card">
         <h2>Your journeys</h2>
+        {% if journeys %}
         <div class="journey-list">
             {% for journey in journeys %}
             <div class="journey">
@@ -399,8 +409,10 @@
             </div>
             {% endfor %}
         </div>
+        {% else %}
+        <p class="journey-empty">No journeys saved yet. Add one above to see it here.</p>
+        {% endif %}
     </div>
-    {% endif %}
 
     <div class="card">
         <h2>Live Line Statuses</h2>
