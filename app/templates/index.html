@@ -250,6 +250,20 @@
             margin: 8px 0 0;
         }
 
+        .message {
+            border-radius: 8px;
+            padding: 12px 16px;
+            margin-bottom: 20px;
+            font-weight: 500;
+            font-size: 0.95rem;
+        }
+
+        .message.success {
+            background: var(--good-bg);
+            border: 1px solid #a5d6a7;
+            color: var(--good);
+        }
+
         .form-errors {
             background: #fff5f5;
             border: 1px solid #ffcdd2;
@@ -451,6 +465,12 @@
     <h1>TfL Smart Commute</h1>
     <p class="subtitle">Live status for Tube, Overground, Elizabeth line and DLR</p>
 
+    {% if message %}
+    <div class="message {{ msg_type or 'success' }}" role="status">
+        {{ message }}
+    </div>
+    {% endif %}
+
     {% if error %}
     <div class="card error">
         <h2>Unable to load line statuses</h2>
@@ -506,7 +526,7 @@
     </div>
 
     <div class="card">
-        <h2>Your journeys</h2>
+        <h2>Your journeys{% if journeys %} ({{ journeys|length }}){% endif %}</h2>
         {% if journeys %}
         <div class="journey-list">
             {% for journey in journeys %}
@@ -521,7 +541,7 @@
                 <div class="journey-actions">
                     <form method="post" action="/delete-journey">
                         <input type="hidden" name="index" value="{{ loop.index0 }}">
-                        <button type="submit" class="delete-btn">Delete</button>
+                        <button type="submit" class="delete-btn" onclick="return confirm('Delete this journey?');">Delete</button>
                     </form>
                 </div>
             </div>
@@ -673,8 +693,8 @@
             }
 
             function validateOriginDest() {
-                const origin = originInput.value.trim();
-                const dest = destInput.value.trim();
+                const origin = originInput.value.trim().toLowerCase();
+                const dest = destInput.value.trim().toLowerCase();
                 const originErr = document.getElementById('origin-error');
                 const destErr = document.getElementById('destination-error');
 
