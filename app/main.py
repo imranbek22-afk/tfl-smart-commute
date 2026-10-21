@@ -55,3 +55,14 @@ async def add_journey(
     }
     journeys.append(journey)
     return RedirectResponse(url="/", status_code=303)
+
+
+@app.post("/delete-journey")
+async def delete_journey(index: int = Form(...)):
+    """Remove a journey from memory by its list index."""
+    try:
+        if 0 <= index < len(journeys):
+            journeys.pop(index)
+    except (ValueError, IndexError):
+        pass  # Ignore invalid indices
+    return RedirectResponse(url="/", status_code=303)

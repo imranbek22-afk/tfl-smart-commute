@@ -14,7 +14,7 @@ Built over several weeks as a personal tool I actually wanted to use.
 - [x] Project structure and README
 - [x] Live TfL line status (with clean summary + detailed list)
 - [x] Filter: All lines / Disruptions only
-- [x] Save personal journeys (in-memory, displayed on the page)
+- [x] Save and delete personal journeys (in-memory, displayed on the page)
 - [ ] "Is my commute affected?" view
 - [ ] Persistent storage with SQLite
 
@@ -32,7 +32,7 @@ Built over several weeks as a personal tool I actually wanted to use.
 git clone https://github.com/imranbek22-afk/tfl-smart-commute.git
 cd tfl-smart-commute
 python -m venv .venv
-source .venv/bin/activate   # Windows: .venv\Scripts\activate
+source .venv/bin/activate   # Windows: .venv\\Scripts\\activate
 pip install -r requirements.txt
 uvicorn app.main:app --reload
 ```
