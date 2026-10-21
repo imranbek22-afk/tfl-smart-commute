@@ -310,6 +310,24 @@
             background: #001580;
         }
 
+        .delete-btn {
+            background: transparent;
+            color: var(--severe);
+            border: 1px solid var(--severe);
+            border-radius: 6px;
+            padding: 4px 10px;
+            font-size: 0.8rem;
+            font-weight: 500;
+            cursor: pointer;
+            font-family: inherit;
+            margin-top: 8px;
+            align-self: flex-start;
+        }
+
+        .delete-btn:hover {
+            background: var(--severe-bg);
+        }
+
         .journey-list {
             display: flex;
             flex-direction: column;
@@ -406,6 +424,10 @@
                 {% if journey.lines %}
                 <div class="journey-lines">Lines: {{ journey.lines | join(', ') }}</div>
                 {% endif %}
+                <form method="post" action="/delete-journey" style="display: inline;">
+                    <input type="hidden" name="index" value="{{ loop.index0 }}">
+                    <button type="submit" class="delete-btn">Delete</button>
+                </form>
             </div>
             {% endfor %}
         </div>
