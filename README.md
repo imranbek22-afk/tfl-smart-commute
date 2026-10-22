@@ -15,6 +15,7 @@ Built over several weeks as a personal tool I actually wanted to use.
 - [x] Live TfL line status (with clean summary + detailed list)
 - [x] Filter: All lines / Disruptions only
 - [x] Save and delete personal journeys (in-memory, displayed on the page)
+- [x] Show live status for lines used by each saved journey
 - [ ] "Is my commute affected?" view
 - [ ] Persistent storage with SQLite
 

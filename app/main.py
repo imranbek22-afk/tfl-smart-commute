@@ -11,6 +11,81 @@ templates = Jinja2Templates(directory="app/templates")
 journeys: list[dict] = []
 
 
+def _severity_from_description(desc: str) -> str:
+    """Map TfL status description to a severity class used by the UI."""
+    if desc == "Good Service":
+        return "good"
+    if desc in ["Minor Delays", "Reduced Service", "Special Service", "Change of frequency"]:
+        return "minor"
+    if desc in ["Severe Delays", "Part Suspended", "Suspended", "Part Closure", "Part Closed", "Issues Reported"]:
+        return "severe"
+    if desc in ["Closed", "Planned Closure", "No Service", "Not Running"]:
+        return "closed"
+    return "minor"
+
+
+def build_status_lookup(lines: list) -> dict[str, dict]:
+    """Build a case-insensitive lookup of line name → status info."""
+    lookup: dict[str, dict] = {}
+    for line in lines:
+        name = (line.get("name") or "").strip()
+        if not name:
+            continue
+        statuses = line.get("lineStatuses") or []
+        status = statuses[0] if statuses else {}
+        desc = status.get("statusSeverityDescription") or "Unknown"
+        reason = status.get("reason") or ""
+        lookup[name.lower()] = {
+            "name": name,
+            "description": desc,
+            "reason": reason,
+            "severity": _severity_from_description(desc),
+        }
+    return lookup
+
+
+def enrich_journeys(journeys_list: list[dict], status_lookup: dict[str, dict]) -> list[dict]:
+    """Attach live line status info to each journey."""
+    enriched: list[dict] = []
+    for journey in journeys_list:
+        j = journey.copy()
+        line_statuses: list[dict] = []
+        for raw_name in journey.get("lines") or []:
+            key = raw_name.lower().strip()
+            info = status_lookup.get(key)
+            # Soft match: strip common suffixes or partial containment
+            if not info:
+                cleaned = key.removesuffix(" line").strip()
+                info = status_lookup.get(cleaned)
+            if not info:
+                for lk, lv in status_lookup.items():
+                    if key in lk or lk in key or cleaned in lk:
+                        info = lv
+                        break
+            if info:
+                line_statuses.append(info)
+            else:
+                line_statuses.append({
+                    "name": raw_name,
+                    "description": "Unknown",
+                    "reason": "",
+                    "severity": "unknown",
+                })
+        j["line_statuses"] = line_statuses
+        # Overall journey health
+        severities = {ls["severity"] for ls in line_statuses}
+        if "severe" in severities or "closed" in severities:
+            j["overall"] = "severe"
+        elif "minor" in severities:
+            j["overall"] = "minor"
+        elif line_statuses and all(s == "good" for s in severities):
+            j["overall"] = "good"
+        else:
+            j["overall"] = "unknown"
+        enriched.append(j)
+    return enriched
+
+
 @app.get("/", response_class=HTMLResponse)
 async def home(request: Request):
     lines: list = []
@@ -28,6 +103,9 @@ async def home(request: Request):
         # Catch-all so the page never crashes
         error = "Something went wrong while fetching line statuses. Please try again later."
 
+    status_lookup = build_status_lookup(lines)
+    enriched = enrich_journeys(journeys, status_lookup)
+
     # Simple success messages from redirects
     message = None
     msg_type = None
@@ -44,7 +122,7 @@ async def home(request: Request):
             "request": request,
             "lines": lines,
             "error": error,
-            "journeys": journeys,
+            "journeys": enriched,
             "message": message,
             "msg_type": msg_type,
         },
@@ -87,13 +165,16 @@ async def add_journey(
         except Exception:
             error = "Something went wrong while fetching line statuses. Please try again later."
 
+        status_lookup = build_status_lookup(lines_data)
+        enriched = enrich_journeys(journeys, status_lookup)
+
         return templates.TemplateResponse(
             "index.html",
             {
                 "request": request,
                 "lines": lines_data,
                 "error": error,
-                "journeys": journeys,
+                "journeys": enriched,
                 "form_errors": form_errors,
                 "form_data": {
                     "name": name,

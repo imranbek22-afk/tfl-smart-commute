@@ -410,6 +410,21 @@
             border-left: 4px solid var(--tfl-blue);
         }
 
+        .journey[data-overall="severe"] {
+            background: var(--severe-bg);
+            border-left-color: var(--severe);
+        }
+
+        .journey[data-overall="minor"] {
+            background: var(--minor-bg);
+            border-left-color: var(--minor);
+        }
+
+        .journey[data-overall="good"] {
+            background: var(--good-bg);
+            border-left-color: var(--good);
+        }
+
         .journey-main {
             flex: 1;
             min-width: 0;
@@ -428,9 +443,50 @@
         }
 
         .journey-lines {
+            margin-top: 10px;
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .journey-line-status {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
             font-size: 0.85rem;
-            margin-top: 6px;
-            color: var(--text);
+            padding: 6px 0;
+            border-top: 1px solid rgba(0,0,0,0.06);
+        }
+
+        .journey-line-status:first-child {
+            border-top: none;
+            padding-top: 0;
+        }
+
+        .journey-line-status .line-name {
+            font-weight: 600;
+            font-size: 0.9rem;
+        }
+
+        .journey-line-status .status {
+            font-size: 0.75rem;
+            padding: 3px 8px;
+            flex-shrink: 0;
+        }
+
+        .journey-line-status .reason {
+            font-size: 0.75rem;
+            text-align: left;
+            max-width: none;
+            margin-top: 2px;
+            grid-column: 1 / -1;
+        }
+
+        .status.unknown {
+            color: var(--text-muted);
+            background: #f3f4f6;
+            border: 1px solid var(--border);
         }
 
         .journey-actions {
@@ -516,7 +572,7 @@
             <div class="field-error" id="destination-error"></div>
 
             <label for="lines">Lines (comma-separated, optional)</label>
-            <p class="hint">e.g. Northern, Bank — helps highlight affected journeys later</p>
+            <p class="hint">e.g. Northern, Victoria — live status will appear on each saved journey</p>
             <input type="text" id="lines" name="lines" placeholder="e.g. Northern, Bank"
                    value="{{ form_data.lines if form_data else '' }}"
                    maxlength="120" autocomplete="off">
@@ -530,11 +586,23 @@
         {% if journeys %}
         <div class="journey-list">
             {% for journey in journeys %}
-            <div class="journey">
+            <div class="journey" data-overall="{{ journey.overall | default('unknown') }}">
                 <div class="journey-main">
                     <div class="journey-name">{{ journey.name }}</div>
                     <div class="journey-route">{{ journey.origin }} → {{ journey.destination }}</div>
-                    {% if journey.lines %}
+                    {% if journey.line_statuses %}
+                    <div class="journey-lines">
+                        {% for ls in journey.line_statuses %}
+                        <div class="journey-line-status" data-severity="{{ ls.severity }}">
+                            <span class="line-name">{{ ls.name }}</span>
+                            <span class="status {{ ls.severity }}">{{ ls.description }}</span>
+                            {% if ls.reason %}
+                            <div class="reason">{{ ls.reason | truncate(120) }}</div>
+                            {% endif %}
+                        </div>
+                        {% endfor %}
+                    </div>
+                    {% elif journey.lines %}
                     <div class="journey-lines">Lines: {{ journey.lines | join(', ') }}</div>
                     {% endif %}
                 </div>
