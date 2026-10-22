@@ -16,7 +16,7 @@ Built over several weeks as a personal tool I actually wanted to use.
 - [x] Filter: All lines / Disruptions only
 - [x] Save and delete personal journeys (in-memory, displayed on the page)
 - [x] Show live status for lines used by each saved journey
-- [ ] "Is my commute affected?" view
+- [x] Clear indicator showing whether each saved journey is affected by disruptions
 - [ ] Persistent storage with SQLite
 
 ## Tech Stack
