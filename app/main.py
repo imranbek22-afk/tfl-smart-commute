@@ -1,3 +1,5 @@
+from datetime import datetime
+
 from fastapi import FastAPI, Request, Form
 from fastapi.templating import Jinja2Templates
 from fastapi.responses import HTMLResponse, RedirectResponse
@@ -116,6 +118,8 @@ async def home(request: Request):
         message = "Journey deleted."
         msg_type = "success"
 
+    last_updated = datetime.now().strftime("%H:%M")
+
     return templates.TemplateResponse(
         "index.html",
         {
@@ -125,6 +129,7 @@ async def home(request: Request):
             "journeys": enriched,
             "message": message,
             "msg_type": msg_type,
+            "last_updated": last_updated,
         },
     )
 
@@ -168,6 +173,8 @@ async def add_journey(
         status_lookup = build_status_lookup(lines_data)
         enriched = enrich_journeys(journeys, status_lookup)
 
+        last_updated = datetime.now().strftime("%H:%M")
+
         return templates.TemplateResponse(
             "index.html",
             {
@@ -182,6 +189,7 @@ async def add_journey(
                     "destination": destination,
                     "lines": lines,
                 },
+                "last_updated": last_updated,
             },
             status_code=400,
         )
