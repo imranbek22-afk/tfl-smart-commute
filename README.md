@@ -8,7 +8,7 @@ Quickly see live status for Tube, Overground, Elizabeth line and DLR, and check 
 
 - [x] Live TfL line status with clean summary and detailed list
 - [x] Filter: All lines / Disruptions only
-- [x] Save and delete personal journeys (in-memory)
+- [x] Save, edit and delete personal journeys (in-memory)
 - [x] Live status shown for the lines used by each saved journey
 - [x] Clear indicator showing whether each saved journey is affected
 - [ ] Persistent storage with SQLite (planned)

@@ -117,6 +117,9 @@ async def home(request: Request):
     elif request.query_params.get("deleted"):
         message = "Journey deleted."
         msg_type = "success"
+    elif request.query_params.get("edited"):
+        message = "Journey updated."
+        msg_type = "success"
 
     last_updated = datetime.now().strftime("%H:%M")
 
@@ -213,3 +216,54 @@ async def delete_journey(index: int = Form(...)):
     except (ValueError, IndexError):
         pass  # Ignore invalid indices
     return RedirectResponse(url="/?deleted=1", status_code=303)
+
+
+@app.post("/edit-journey")
+async def edit_journey(
+    request: Request,
+    index: int = Form(...),
+    name: str = Form(...),
+    lines: str = Form(""),
+):
+    """Update the name and lines of an existing journey."""
+    name = name.strip()
+    lines_list = [line.strip() for line in lines.split(",") if line.strip()]
+
+    form_errors: list[str] = []
+
+    if not (0 <= index < len(journeys)):
+        form_errors.append("Invalid journey.")
+    if len(name) < 2:
+        form_errors.append("Journey name must be at least 2 characters.")
+
+    if form_errors:
+        # Re-render with errors (rare for edit; keep simple)
+        lines_data: list = []
+        error: str | None = None
+        try:
+            lines_data = await get_line_statuses()
+        except (TfLTimeoutError, TfLUnavailableError, TfLError) as e:
+            error = e.user_message
+        except Exception:
+            error = "Something went wrong while fetching line statuses. Please try again later."
+
+        status_lookup = build_status_lookup(lines_data)
+        enriched = enrich_journeys(journeys, status_lookup)
+        last_updated = datetime.now().strftime("%H:%M")
+
+        return templates.TemplateResponse(
+            "index.html",
+            {
+                "request": request,
+                "lines": lines_data,
+                "error": error,
+                "journeys": enriched,
+                "form_errors": form_errors,
+                "last_updated": last_updated,
+            },
+            status_code=400,
+        )
+
+    journeys[index]["name"] = name
+    journeys[index]["lines"] = lines_list
+    return RedirectResponse(url="/?edited=1", status_code=303)
