@@ -84,6 +84,12 @@ def enrich_journeys(journeys_list: list[dict], status_lookup: dict[str, dict]) -
             j["overall"] = "good"
         else:
             j["overall"] = "unknown"
+        # Specific disrupted lines so journey cards can show exactly which ones are affected
+        j["disrupted_lines"] = [
+            ls["name"]
+            for ls in line_statuses
+            if ls["severity"] in ("minor", "severe", "closed")
+        ]
         enriched.append(j)
     return enriched
 
